@@ -2,6 +2,7 @@ from tkinter.font import BOLD
 from Globals import *
 from tkinter import font
 from piece import piece,block
+from MiniMaxAlgo import*
 
 
 class board():
@@ -222,7 +223,7 @@ class board():
         return self.player_count - self.AI_count + (self.player_king_count * 0.5 - self.AI_king_count*0.5)
     
 
-    def get_all_valid_moves_all_pieces(self, color):
+    def get_all_pieces(self, color):
         all_pieces = []
         for row in self.board:
             for piece in row:
