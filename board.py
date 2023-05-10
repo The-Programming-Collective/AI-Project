@@ -23,11 +23,11 @@ class board():
         
         
     def reset_board(self):
-        self.player_1_count = 12
-        self.player_2_count = 12
-        self.player_1_king_count=0
-        self.player_2_king_count=0
-        self.change_turn(PLAYER_1_COLOR)
+        self.AI_count = 12
+        self.player_count = 12
+        self.AI_king_count=0
+        self.player_king_count=0
+        self.change_turn(PLAYER_COLOR)
         self.play=True
         self.board = []
         
@@ -40,9 +40,9 @@ class board():
                 else:
                     self.board[row].append(block(self.Frame2,row,column,BLOCK_2_COLOR))
                     if(row<3):
-                        self.board[row][column].set_piece(piece(row,column,PLAYER_1_COLOR,self.piece_clicked))
+                        self.board[row][column].set_piece(piece(row,column,AI_COLOR,self.piece_clicked))
                     if row > 4:
-                        self.board[row][column].set_piece(piece(row,column,PLAYER_2_COLOR,self.piece_clicked))            
+                        self.board[row][column].set_piece(piece(row,column,PLAYER_COLOR,self.piece_clicked))            
                 counter +=1  
             counter+=1
 
@@ -85,17 +85,17 @@ class board():
         
         self.remove_valid_moves()
             
-        if self.turn == PLAYER_1_COLOR:
+        if self.turn == AI_COLOR:
             if row == 8-1:
                 self.selected.make_king()
-                self.player_1_king_count+=1
-            self.change_turn(PLAYER_2_COLOR)
+                self.player_king_count+=1
+            self.change_turn(PLAYER_COLOR)
             
         else:
             if row == 0:
                 self.selected.make_king()
-                self.player_2_king_count+=1
-            self.change_turn(PLAYER_1_COLOR)
+                self.AI_king_count+=1
+            self.change_turn(AI_COLOR)
 
         self.board[row][column].set_piece(self.selected)
         
@@ -119,17 +119,17 @@ class board():
             skipped = self.valid_moves[(row, column)]  
             for piece in skipped:
                 
-                if self.turn==PLAYER_1_COLOR:
-                    self.player_2_count-=1
+                if self.turn==AI_COLOR:
+                    self.player_count-=1
                     
                     if self.board[piece.row][piece.column].get_piece().is_king():
-                        self.player_2_king_count-=1
+                        self.player_king_count-=1
                         
                 else:
-                    self.player_1_count-=1
+                    self.AI_count-=1
                     
                     if self.board[piece.row][piece.column].get_piece().is_king():
-                        self.player_1_king_count-=1
+                        self.AI_king_count-=1
                         
                 self.board[piece.row][piece.column].remove_piece()
         except:
@@ -142,10 +142,10 @@ class board():
         right = piece.column + 1
         row = piece.row
 
-        if piece.color == PLAYER_2_COLOR or piece.king:
+        if piece.color == PLAYER_COLOR or piece.king:
             moves.update(self._traverse_left(row -1, max(row-3, -1), -1, piece.color, left))
             moves.update(self._traverse_right(row -1, max(row-3, -1), -1, piece.color, right))
-        if piece.color == PLAYER_1_COLOR or piece.king:
+        if piece.color == AI_COLOR or piece.king:
             moves.update(self._traverse_left(row +1, min(row+3, 8), 1, piece.color, left))
             moves.update(self._traverse_right(row +1, min(row+3, 8), 1, piece.color, right))
         return moves
@@ -218,10 +218,28 @@ class board():
         
         return moves
     
+    def evaluate_score(self):
+        return self.player_count - self.AI_count + (self.player_king_count * 0.5 - self.AI_king_count*0.5)
     
+
+    def get_all_valid_moves_all_pieces(self, color):
+        all_pieces = []
+        for row in self.board:
+            for piece in row:
+                if piece != None and piece.color == color:
+                    all_pieces.append(piece)
+        return all_pieces
+
+    def get_board(self):
+        return self.board
+    
+    def AI_move_board(self, board):
+        self.board = board
+        self.change_turn()
+
     def winner(self):
-        if self.player_1_count <= 0:
-            return PLAYER_2_COLOR
-        elif self.player_2_count <= 0:
-            return PLAYER_1_COLOR
+        if self.AI_count <= 0:
+            return PLAYER_COLOR
+        elif self.player_count <= 0:
+            return AI_COLOR
         return None 
