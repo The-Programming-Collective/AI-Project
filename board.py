@@ -1,94 +1,227 @@
-from PIL import ImageGrab
-import pyautogui
-
-# YOU MAY NEED TO CHANGE THESE VALUES BASED ON YOUR SCREEN SIZE
-LEFT = 570
-TOP = 200
-RIGHT = 1350
-BOTTOM = 875
-
-EMPTY = 0
-RED = 1
-BLUE = 2
+from tkinter.font import BOLD
+from Globals import *
+from tkinter import font
+from piece import piece,block
 
 
-class Board:
-    def __init__(self) -> None:
-        self.board = [[EMPTY for i in range(7)] for j in range(6)]
+class board():
+    def __init__(self,Frame,turn_indicator,algorithm,difficulty):
+        self.Frame2 = Frame 
+        self.turn_indicator = turn_indicator
+        self.reset_board()
+        self.selected = None
+        self.valid_moves = {}
+        self.difficulty = difficulty
+        self.algorithm = algorithm
+        print(self.difficulty.get())
+        print(self.algorithm.get())
 
-    def print_grid(self, grid):
-        for i in range(0, len(grid)):
-            for j in range(0, len(grid[i])):
-                if grid[i][j] == EMPTY:
-                    print("*", end=" \t")
-                elif grid[i][j] == RED:
-                    print("R", end=" \t")
-                elif grid[i][j] == BLUE:
-                    print("B", end=" \t")
-            print("\n")
+        
+    def reset_obj(self):
+        self.__init__(self.Frame2,self.turn_indicator,self.algorithm,self.difficulty)
+        print("reset")
+        
+        
+    def reset_board(self):
+        self.player_1_count = 12
+        self.player_2_count = 12
+        self.player_1_king_count=0
+        self.player_2_king_count=0
+        self.change_turn(PLAYER_1_COLOR)
+        self.play=True
+        self.board = []
+        
+        counter = 0
+        for row in range(8):
+            self.board.append([])
+            for column in range(8):
+                if counter % 2 == 0:
+                    self.board[row].append(block(self.Frame2,row,column,BLOCK_1_COLOR))
+                else:
+                    self.board[row].append(block(self.Frame2,row,column,BLOCK_2_COLOR))
+                    if(row<3):
+                        self.board[row][column].set_piece(piece(row,column,PLAYER_1_COLOR,self.piece_clicked))
+                    if row > 4:
+                        self.board[row][column].set_piece(piece(row,column,PLAYER_2_COLOR,self.piece_clicked))            
+                counter +=1  
+            counter+=1
 
-    def _convert_grid_to_color(self, grid):
-        for i in range(0, len(grid)):
-            for j in range(0, len(grid[i])):
-                if grid[i][j] == (255, 255, 255):
-                    grid[i][j] = EMPTY
-                elif grid[i][j][0] > 200:
-                    grid[i][j] = RED
-                elif grid[i][j][0] > 50:
-                    grid[i][j] = BLUE
-        return grid
 
-    def _get_grid_cordinates(self):
-        startCord = (50, 55)
-        cordArr = []
-        for i in range(0, 7):
-            for j in range(0, 6):
-                x = startCord[0] + i * 115
-                y = startCord[1] + j * 112
-                cordArr.append((x, y))
-        return cordArr
+    def piece_clicked(self,P):
+        if not self.play:
+            return
+        
+        self.remove_valid_moves()
+        
+        if self.turn!=P.color:
+            return
 
-    def _transpose_grid(self, grid):
-        return [[grid[j][i] for j in range(len(grid))] for i in range(len(grid[0]))]
+        self.selected = P
+        self.valid_moves = self.get_valid_moves(P)
+        self.draw_valid_moves()
+            
+    
+    def remove_valid_moves(self):
+        for move in self.valid_moves:
+            self.board[move[0]][move[1]].remove_piece()
+        self.valid_moves={}
+            
+            
+    def draw_valid_moves(self):
+        for move in self.valid_moves:
+            self.board[move[0]][move[1]].set_piece(piece(move[0],move[1],VALID_COLOR,self.move))
+        
+        
+    def move(self,P):
+        row = P.row
+        column = P.column
+        original_row,original_col=self.selected.get_position()
+        
+        self.board[original_row][original_col].remove_piece()
+        self.selected.row=row
+        self.selected.column=column
+        
+        self.remove_skipped(row,column)
+        
+        self.remove_valid_moves()
+            
+        if self.turn == PLAYER_1_COLOR:
+            if row == 8-1:
+                self.selected.make_king()
+                self.player_1_king_count+=1
+            self.change_turn(PLAYER_2_COLOR)
+            
+        else:
+            if row == 0:
+                self.selected.make_king()
+                self.player_2_king_count+=1
+            self.change_turn(PLAYER_1_COLOR)
 
-    def _capture_image(self):
-        image = ImageGrab.grab()
-        cropedImage = image.crop((LEFT, TOP, RIGHT, BOTTOM))
-        return cropedImage
+        self.board[row][column].set_piece(self.selected)
+        
+        winner = self.winner()
+        if winner != None:
+            self.play=False
+            f = font.Font(family='Helvetica', size=8, weight='bold')
+            self.turn_indicator.config(text=winner+" wins",font=f,fg="gold",)
+            self.turn_indicator.update()
+        
+    
+    def change_turn(self,color):
+        self.turn = color
+        
+        self.turn_indicator.config(bg=color)
+        self.turn_indicator.update()
+    
+    
+    def remove_skipped(self,row,column):
+        try:
+            skipped = self.valid_moves[(row, column)]  
+            for piece in skipped:
+                
+                if self.turn==PLAYER_1_COLOR:
+                    self.player_2_count-=1
+                    
+                    if self.board[piece.row][piece.column].get_piece().is_king():
+                        self.player_2_king_count-=1
+                        
+                else:
+                    self.player_1_count-=1
+                    
+                    if self.board[piece.row][piece.column].get_piece().is_king():
+                        self.player_1_king_count-=1
+                        
+                self.board[piece.row][piece.column].remove_piece()
+        except:
+            print("Error")
+            
+    
+    def get_valid_moves(self, piece):
+        moves = {}
+        left = piece.column - 1
+        right = piece.column + 1
+        row = piece.row
 
-    def _convert_image_to_grid(self, image):
-        pixels = [[] for i in range(7)]
-        i = 0
-        for index, cord in enumerate(self._get_grid_cordinates()):
-            pixel = image.getpixel(cord)
-            if index % 6 == 0 and index != 0:
-                i += 1
-            pixels[i].append(pixel)
-        return pixels
+        if piece.color == PLAYER_2_COLOR or piece.king:
+            moves.update(self._traverse_left(row -1, max(row-3, -1), -1, piece.color, left))
+            moves.update(self._traverse_right(row -1, max(row-3, -1), -1, piece.color, right))
+        if piece.color == PLAYER_1_COLOR or piece.king:
+            moves.update(self._traverse_left(row +1, min(row+3, 8), 1, piece.color, left))
+            moves.update(self._traverse_right(row +1, min(row+3, 8), 1, piece.color, right))
+        return moves
+        
+        
+    def _traverse_left(self, start, stop, step, color, left, skipped=[]):
+        moves = {}
+        last = []
+        for r in range(start, stop, step):
+            if left < 0:
+                break
+            
+            current = self.board[r][left].get_piece()
+            if current == None:
+                if skipped and not last:
+                    break
+                elif skipped:
+                    moves[(r, left)] = last + skipped
+                else:
+                    moves[(r, left)] = last
+                
+                if last:
+                    if step == -1:
+                        row = max(r-3, 0)
+                    else:
+                        row = min(r+3, 8)
+                    moves.update(self._traverse_left(r+step, row, step, color, left-1,skipped=last))
+                    moves.update(self._traverse_right(r+step, row, step, color, left+1,skipped=last))
+                break
+            elif current.color == color:
+                break
+            else:
+                last = [current]
 
-    def _get_grid(self):
-        cropedImage = self._capture_image()
-        pixels = self._convert_image_to_grid(cropedImage)
-        # cropedImage.show()
-        grid = self._transpose_grid(pixels)
-        return grid
+            left -= 1
+        
+        return moves
 
-    def _check_if_game_end(self, grid):
-        for i in range(0, len(grid)):
-            for j in range(0, len(grid[i])):
-                if grid[i][j] == EMPTY and self.board[i][j] != EMPTY:
-                    return True
-        return False
 
-    def get_game_grid(self):
-        game_grid = self._get_grid()
-        new_grid = self._convert_grid_to_color(game_grid)
-        is_game_end = self._check_if_game_end(new_grid)
-        self.board = new_grid
-        return (self.board, is_game_end)
+    def _traverse_right(self, start, stop, step, color, right, skipped=[]):
+        moves = {}
+        last = []
+        for r in range(start, stop, step):
+            if right >= 8:
+                break
+            
+            current = self.board[r][right].get_piece()
+            if current == None:
+                if skipped and not last:
+                    break
+                elif skipped:
+                    moves[(r,right)] = last + skipped
+                else:
+                    moves[(r, right)] = last
+                
+                if last:
+                    if step == -1:
+                        row = max(r-3, 0)
+                    else:
+                        row = min(r+3, 8)
+                    moves.update(self._traverse_left(r+step, row, step, color, right-1,skipped=last))
+                    moves.update(self._traverse_right(r+step, row, step, color, right+1,skipped=last))
+                break
+            elif current.color == color:
+                break
+            else:
+                last = [current]
 
-    def select_column(self, column):
-        pyautogui.click(
-            self._get_grid_cordinates()[column][0] + LEFT,
-            self._get_grid_cordinates()[column][1] + TOP,
-        )
+            right += 1
+        
+        return moves
+    
+    
+    def winner(self):
+        if self.player_1_count <= 0:
+            return PLAYER_2_COLOR
+        elif self.player_2_count <= 0:
+            return PLAYER_1_COLOR
+        return None 
