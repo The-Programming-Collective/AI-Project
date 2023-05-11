@@ -45,5 +45,9 @@ class piece():
     def get_position(self):
         return self.row,self.column
     
+    def set_position(self,row,column):
+        self.row=row
+        self.column=column
+    
     def get_color(self):
         return self.color

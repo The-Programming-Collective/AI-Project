@@ -1,7 +1,7 @@
 import tkinter as tk
 from board import*
 from Globals import *
-from piece import piece,block
+from piece import piece
 import copy
 
 def minimax(board , depth , AI_Turn):
@@ -35,7 +35,7 @@ def get_all_moves(board , color):
         valid_moves = board.get_valid_moves(piece)
         for move in valid_moves.items():
             temp_board = copy.deepcopy(board)
-            temp_piece = temp_board.get_piece(move)
+            temp_piece = temp_board[move[0]][move[1]]
             new_board = simulate_move(temp_piece , temp_board)
             moves.append([new_board, piece])
     return moves

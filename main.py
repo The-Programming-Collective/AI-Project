@@ -1,6 +1,7 @@
 from tkinter import messagebox
 import tkinter as tk
 from board import board
+from game import game
 
 
 class window():
@@ -49,11 +50,10 @@ class window():
         self.Frame2 = tk.Frame(self.window,bg="#D9D9D9")
         self.Frame2.pack(expand=True)
       
-        self.board = board(self.Frame2,turn_indicator,algorithm,difficulty)
+        self.board = game(self.Frame2,turn_indicator,algorithm,difficulty)
 
         self.window.mainloop()    
 
 
 if __name__=="__main__":
-    # obj = window()
-    board = board()
+    obj = window()
