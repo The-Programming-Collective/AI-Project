@@ -1,20 +1,18 @@
-from copy import deepcopy
 import tkinter as tk
 from board import*
 from Globals import *
-
-
-AI_color = AI_COLOR
-Player_color = PLAYER_COLOR
-
+from piece import piece,block
+import copy
 
 def minimax(board , depth , AI_Turn):
-    if depth==0 or board.winner(board) != None:
-        return board.evaluate_score , board
+    if depth==0 or board.winner() != None:
+        return board.evaluate_score() , board
+    
     if AI_Turn:
-        minEval = float('+inf')
+        minEval = float('inf')
         min_move = None
-        for move in get_all_moves(board,AI_COLOR):
+        move_list = get_all_moves(board,AI_COLOR)
+        for move in move_list:
             evaluation = minimax(move,depth-1)
             minEval = min(minEval, evaluation, False)[0]
             if minEval==evaluation:
@@ -23,7 +21,7 @@ def minimax(board , depth , AI_Turn):
     else:
         maxEval = float('-inf')
         max_move = None
-        for move in get_all_moves(board,Player_color):
+        for move in get_all_moves(board,PLAYER_COLOR):
             evaluation = minimax(move,depth-1)
             maxEval = max(maxEval, evaluation, True)[0]
             if maxEval==evaluation:
@@ -31,17 +29,17 @@ def minimax(board , depth , AI_Turn):
         return maxEval ,max_move
 
 
-
 def get_all_moves(board , color):
     moves = []
     for piece in board.get_all_pieces(color):
         valid_moves = board.get_valid_moves(piece)
-        for move, skip in valid_moves.items():
-            temp_board = deepcopy(board)
-            temp_piece = temp_board.get_piece(piece)
+        for move in valid_moves.items():
+            temp_board = copy.deepcopy(board)
+            temp_piece = temp_board.get_piece(move)
             new_board = simulate_move(temp_piece , temp_board)
             moves.append([new_board, piece])
     return moves
+
 
 def simulate_move(piece,board ):
     board.move(piece)

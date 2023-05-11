@@ -55,4 +55,5 @@ class window():
 
 
 if __name__=="__main__":
-    obj = window()
+    # obj = window()
+    board = board()
