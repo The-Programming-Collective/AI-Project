@@ -1,46 +1,64 @@
-import tkinter as tk
-from board import*
 from Globals import *
-from piece import piece
-import copy
+from copy import deepcopy
 
-def minimax(board , depth , AI_Turn):
-    if depth==0 or board.winner() != None:
-        return board.evaluate_score() , board
+counter = 0
+def minimax(position, depth, max_player):
+    global counter 
+    counter +=1
+    if depth == 0 or position.winner() != None:
+        return position.evaluate_score(), position
     
-    if AI_Turn:
-        minEval = float('inf')
-        min_move = None
-        move_list = get_all_moves(board,AI_COLOR)
-        for move in move_list:
-            evaluation = minimax(move,depth-1)
-            minEval = min(minEval, evaluation, False)[0]
-            if minEval==evaluation:
-                min_move=move
-        return minEval ,min_move
-    else:
+    if max_player:
         maxEval = float('-inf')
-        max_move = None
-        for move in get_all_moves(board,PLAYER_COLOR):
-            evaluation = minimax(move,depth-1)
-            maxEval = max(maxEval, evaluation, True)[0]
-            if maxEval==evaluation:
-                max_move=move
-        return maxEval ,max_move
+        best_move = None
+        for move in get_all_moves(position, AI_COLOR):
+            evaluation = minimax(move, depth-1, False)[0]
+            maxEval = max(maxEval, evaluation)
+            if maxEval == evaluation:
+                best_move = move
+        
+        return maxEval, best_move
+    else:
+        minEval = float('inf')
+        best_move = None
+        for move in get_all_moves(position, PLAYER_COLOR):
+            evaluation = minimax(move, depth-1, True)[0]
+            minEval = min(minEval, evaluation)
+            if minEval == evaluation:
+                best_move = move
+        
+        return minEval, best_move
 
 
-def get_all_moves(board , color):
+def simulate_move(piece, move, board):
+    board.move(piece, move[0], move[1])
+    return board
+
+
+def get_all_moves(board, color):
     moves = []
+
     for piece in board.get_all_pieces(color):
         valid_moves = board.get_valid_moves(piece)
-        for move in valid_moves.items():
-            temp_board = copy.deepcopy(board)
-            temp_piece = temp_board[move[0]][move[1]]
-            new_board = simulate_move(temp_piece , temp_board)
-            moves.append([new_board, piece])
+        for move, skip in valid_moves.items():
+            # draw_moves(game, board, piece)
+            temp_board = deepcopy(board)
+            temp_piece = temp_board.get_board()[piece.row][piece.column]
+            new_board = simulate_move(temp_piece, move, temp_board)
+            moves.append(new_board)
+    
     return moves
 
 
-def simulate_move(piece,board ):
-    board.move(piece)
-    return board
+
+# def pprint(list):
+#     for i in range(8):
+#         for j in range(8):
+#             if list[i][j]==0:
+#                 print("0 ,",end="")
+#             elif list[i][j].get_color()==PLAYER_COLOR:
+#                 print("P1 ,",end="")
+#             elif list[i][j].get_color()==AI_COLOR:
+#                 print("A1 ,",end="")
+#         print()
+#     print("====================================")

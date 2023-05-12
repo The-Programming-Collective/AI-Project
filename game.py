@@ -8,17 +8,17 @@ import tkinter as tk
 class game():
     def __init__(self,Frame,turn_indicator,algorithm,difficulty):
         self.Frame2 = Frame 
-
-        self.board = board().reset_board()
-        self.selected = None
         self.difficulty = difficulty
         self.algorithm = algorithm
+
+        self.board = board(int(self.difficulty.get()),self.algorithm.get()).reset_board()
+        self.selected = None
         
         self.play=True
-        self.turn = self.board.turn
+        self.turn = PLAYER_COLOR
         
-        print(self.difficulty.get())
-        print(self.algorithm.get())
+        # print(self.difficulty.get())
+        # print(self.algorithm.get())
         
         self.turn_indicator = turn_indicator
         self.change_turn_indicator()
@@ -30,13 +30,13 @@ class game():
         print("reset")
     
     
-    def reset(self):
+    def reset_frame(self):
         for item in self.Frame2.winfo_children():
             item.destroy()
     
     
     def draw_board(self):
-        self.reset()
+        self.reset_frame()
         counter = 0
         for i,row in enumerate(self.board.get_board()):
             for j,piece in enumerate(row):
@@ -85,7 +85,8 @@ class game():
 
 
     def move_piece(self,p):
-        self.board.move(p)
+        row,column = p.get_position()
+        self.board.move(self.selected,row,column)
         self.draw_board()
         
         winner = self.board.winner()
@@ -96,18 +97,12 @@ class game():
             f = font.Font(family='Helvetica', size=8, weight='bold')
             self.turn_indicator.config(text=winner+" wins",font=f,fg="gold",)
             self.turn_indicator.update()
+        
+        self.board = self.board.ai_move()
+        self.draw_board()
                       
         
     def change_turn_indicator(self):
-        self.turn_indicator.config(bg=self.board.turn,text="")
+        self.turn_indicator.config(bg=self.turn,text="")
         self.turn_indicator.update()
     
-    # if winner != None:
-    # self.play=False
-    # f = font.Font(family='Helvetica', size=8, weight='bold')
-    # self.turn_indicator.config(text=winner+" wins",font=f,fg="gold",)
-    # self.turn_indicator.update()
-        
-    
-    def AI_move_board(self, board):
-        self.board = board

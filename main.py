@@ -2,6 +2,7 @@ from tkinter import messagebox
 import tkinter as tk
 from board import board
 from game import game
+from MiniMaxAlgo import minimax
 
 
 class window():
@@ -57,3 +58,9 @@ class window():
 
 if __name__=="__main__":
     obj = window()
+    # b = board(3,"lol")
+    # # print(b.get_valid_moves(b.get_board()[5][0]))
+    # b.selected=b.get_board()[2][1]
+    # b.move(b.get_board()[2][1],3,2)
+    # print(minimax(b,3,True))
+    

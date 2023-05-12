@@ -23,7 +23,7 @@
 #             self.piece = None
 #         except:
 #             raise("lol")
-
+from Globals import *
 class piece():
     def __init__(self,row,column,color):
         self.row = row
@@ -51,3 +51,11 @@ class piece():
     
     def get_color(self):
         return self.color
+    
+    def __repr__(self) -> str:
+        if self.color==AI_COLOR:
+            return "AI"
+        elif self.color==PLAYER_COLOR:
+            return "PL"
+        else:
+            return "VA"
