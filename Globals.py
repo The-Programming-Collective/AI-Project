@@ -1,8 +1,0 @@
-AI_COLOR="black"
-PLAYER_COLOR="red"
-
-BLOCK_1_COLOR="#623737"
-BLOCK_2_COLOR="white"
-VALID_COLOR="Blue"
-
-ROWS = COLUMNS = 8
