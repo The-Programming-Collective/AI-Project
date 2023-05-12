@@ -15,18 +15,42 @@ class game():
         self.turn_indicator = turn_indicator
         self.change_turn_indicator(PLAYER_COLOR)
         self.draw_board()
+        self.moves_counter = 0
+        self.death_counter = 0
+        self.previous_ai_pieces_counter = 12
+        self.previous_player_pieces_counter = 12
 
         
     def play(self):
-        self.board=self.board.ai_move(int(self.difficulty.get()),self.algorithm.get(),self.turn)
+        if not self.play:
+            return
+        
+        new_board=self.board.ai_move(int(self.difficulty.get()),self.algorithm.get(),self.turn)
+        
+        if(not new_board):
+            self.draw_winner(self.board.evaluate_winner())
+            return
+        
+        self.board = new_board
         self.draw_board()
         self.turn = not self.turn
         if self.turn:
             self.change_turn_indicator(AI_COLOR)
         else:
             self.change_turn_indicator(PLAYER_COLOR)
+            
+        self.moves_counter += 1
+        if self.moves_counter >= 30:
+            if (self.previous_ai_pieces_counter==self.board.AI_count and
+            self.previous_player_pieces_counter==self.board.player_count):
+                self.death_counter += 1
+            else:
+                self.death_counter = 0
         
+        if self.death_counter >= 5:
+            self.draw_winner(self.board.evaluate_winner())
         
+
     def reset_obj(self):
         self.__init__(self.Frame2,self.turn_indicator,self.algorithm,self.difficulty)
         print("reset")
@@ -35,7 +59,7 @@ class game():
     def reset_frame(self):
         for item in self.Frame2.winfo_children():
             item.destroy()
-    
+
     
     def draw_board(self):
         self.reset_frame()
@@ -77,15 +101,18 @@ class game():
                       
         
     def change_turn_indicator(self,color):
-        winner = self.board.winner()
+        winner_color = self.board.winner()
         
-        if winner!=None:
-            self.play=False
-            f = font.Font(family='Helvetica', size=8, weight='bold')
-            self.turn_indicator.config(text=winner+" wins",font=f,fg="gold",)
-            self.turn_indicator.update()
+        if winner_color!=None:
+            self.draw_winner(winner_color)
             return 
             
         self.turn_indicator.config(bg=color,text="Next",fg="white")
         self.turn_indicator.update()
     
+    
+    def draw_winner(self,winner_color):
+        self.play=False
+        f = font.Font(family='Helvetica', size=8, weight='bold')
+        self.turn_indicator.config(text= winner_color +" wins",font=f,fg="gold",)
+        self.turn_indicator.update()

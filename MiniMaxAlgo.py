@@ -1,30 +1,47 @@
 from Globals import *
 from copy import deepcopy
 
-def minimax(position, depth, max_player):
+
+def minimax(old_position, position, depth, max_player):    
     if depth == 0 or position.winner() != None:
-        return position.evaluate_score(), position
+        return position.evaluate_score(old_position,max_player), position
     
     if max_player:
         maxEval = float('-inf')
-        best_move = None
-        for move in get_all_moves(position, AI_COLOR):
-            evaluation = minimax(move, depth-1, False)[0]
+        best_board = None
+        
+        all_boards = get_all_boards(position, AI_COLOR)
+        
+        #TODO this case 
+        # if not all_boards:
+        #     return  ,position
+        
+        for board in all_boards:
+            evaluation = minimax(position, board, depth-1, False)[0]
+            print("Evaluation: ", evaluation)
             maxEval = max(maxEval, evaluation)
             if maxEval == evaluation:
-                best_move = move
+                best_board = board
         
-        return maxEval, best_move
+        return maxEval, best_board
     else:
         minEval = float('inf')
-        best_move = None
-        for move in get_all_moves(position, PLAYER_COLOR):
-            evaluation = minimax(move, depth-1, True)[0]
+        best_board = None
+        
+        all_boards = get_all_boards(position, PLAYER_COLOR)
+        
+        #TODO this case 
+        # if not all_boards:
+        #     return  ,position
+        
+        for board in all_boards:
+            evaluation = minimax(position, board, depth-1, True)[0]
+            print("Evaluation: ", evaluation)
             minEval = min(minEval, evaluation)
             if minEval == evaluation:
-                best_move = move
+                best_board = board
         
-        return minEval, best_move
+        return minEval, best_board
 
 
 def simulate_move(piece, move, board,skipped):
@@ -32,8 +49,8 @@ def simulate_move(piece, move, board,skipped):
     return board
 
 
-def get_all_moves(board, color):
-    moves = []
+def get_all_boards(board, color):
+    boards = []
 
     for piece in board.get_all_pieces(color):
         valid_moves = board.get_valid_moves(piece)
@@ -41,6 +58,6 @@ def get_all_moves(board, color):
             temp_board = deepcopy(board)
             temp_piece = temp_board.get_board()[piece.row][piece.column]
             new_board = simulate_move(temp_piece, move, temp_board,skipped)
-            moves.append(new_board)
+            boards.append(new_board)
     
-    return moves
+    return boards

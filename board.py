@@ -1,6 +1,8 @@
 from Globals import *
 from piece import piece
 from MiniMaxAlgo import minimax
+from AlphaBeta import alphabeta
+
 
 class board():
     def __init__(self):
@@ -45,13 +47,18 @@ class board():
         return all_pieces
    
     
-    def evaluate_score(self):
-        temp = self.AI_count-self.player_count + (self.player_king_count * 0.5 - self.AI_king_count*0.5)
-        # if temp < 0 :
-        #     print("whaaaaaaaat")
-        return temp
+    def evaluate_score(self,old_board,turn):
     
-    
+        score=0
+        if not turn and self.winner() == PLAYER_COLOR :
+            score+=1000
+        elif turn and self.winner() == AI_COLOR :
+            score-=1000        
+        score+=self.AI_count - self.player_count 
+        score+=self.player_king_count * 5 - self.AI_king_count * 5
+        return score
+
+
     def get_valid_moves(self, piece):
         moves = {}
         left = piece.column - 1
@@ -181,13 +188,22 @@ class board():
 
     
     def ai_move(self,difficulty,algorithm,player):
-        temp = minimax(self, difficulty, player)
-        return temp[1]
-        
+        if algorithm == "MiniMax":
+            temp = minimax(self,self,difficulty, player)
+            return temp[1]
+        else:
+            temp = alphabeta(self, difficulty, player, float('-inf'),float('inf'))
+            return temp[1]
     
     def winner(self):
         if self.AI_count <= 0:
             return PLAYER_COLOR
         elif self.player_count <= 0:
             return AI_COLOR
-        return None 
+        return None
+    
+    # gets winner when there are no legal moves by counting the pieces on the board. 
+    def evaluate_winner(self):
+        if self.AI_count > self.player_count:
+            return AI_COLOR
+        return PLAYER_COLOR

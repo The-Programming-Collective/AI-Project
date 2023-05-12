@@ -1,7 +1,6 @@
 from time import sleep
 import tkinter as tk
 from game import game
-from MiniMaxAlgo import minimax
 
 
 class window():
