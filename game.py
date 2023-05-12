@@ -7,22 +7,25 @@ import tkinter as tk
 
 class game():
     def __init__(self,Frame,turn_indicator,algorithm,difficulty):
+        self.turn = False
         self.Frame2 = Frame 
-        self.difficulty = difficulty
         self.algorithm = algorithm
-
-        self.board = board().reset_board()
-        self.selected = None
-        
-        self.play=True
-        
-        # print(self.difficulty.get())
-        # print(self.algorithm.get())
-        
+        self.difficulty = difficulty
+        self.board = board()
         self.turn_indicator = turn_indicator
         self.change_turn_indicator(PLAYER_COLOR)
         self.draw_board()
 
+        
+    def play(self):
+        self.board=self.board.ai_move(int(self.difficulty.get()),self.algorithm.get(),self.turn)
+        self.draw_board()
+        self.turn = not self.turn
+        if self.turn:
+            self.change_turn_indicator(AI_COLOR)
+        else:
+            self.change_turn_indicator(PLAYER_COLOR)
+        
         
     def reset_obj(self):
         self.__init__(self.Frame2,self.turn_indicator,self.algorithm,self.difficulty)
@@ -45,9 +48,9 @@ class game():
                     square = self.square(BLOCK_1_COLOR,i,j)
                     
                 if piece != 0 and piece.get_color() != VALID_COLOR:
-                    self.piece(square,piece,self.piece_clicked)
+                    self.piece(square,piece)
                 elif piece !=0 and piece.get_color() == VALID_COLOR:
-                    self.piece(square,piece,self.move_piece)
+                    self.piece(square,piece)
                 
                 counter += 1
             counter += 1
@@ -64,46 +67,25 @@ class game():
         return square
 
 
-    def piece(self,parent,p,function):   
-        self.button = tk.Button(parent,background=p.get_color(), command=lambda: function(p),border=0)
+    def piece(self,parent,p):   
+        self.button = tk.Button(parent,background=p.get_color(),border=0)
         
         if p.is_king():
             f = font.Font(family='Helvetica', size=14, weight='bold')
             self.button.config(text="K",font=f ,fg="gold")
         self.button.grid(sticky="NWSE",padx=10,pady=10)
-
-
-    def piece_clicked(self,p):
-        if not self.play:
-            return
-        
-        self.board.get_valid_moves(p)
-        self.draw_board()
-
-        self.selected = p
-
-
-    def move_piece(self,p):
-        row,column = p.get_position()
-        self.board.move(self.selected,row,column)
-        self.draw_board()
-        
-        
-        self.change_turn_indicator(AI_COLOR)
-        if self.play : 
-            self.board = self.board.ai_move(int(self.difficulty.get()),self.algorithm.get())
-        self.change_turn_indicator(PLAYER_COLOR)
-        self.draw_board()
                       
         
     def change_turn_indicator(self,color):
         winner = self.board.winner()
+        
         if winner!=None:
             self.play=False
             f = font.Font(family='Helvetica', size=8, weight='bold')
             self.turn_indicator.config(text=winner+" wins",font=f,fg="gold",)
             self.turn_indicator.update()
+            return 
             
-        self.turn_indicator.config(bg=color,text="")
+        self.turn_indicator.config(bg=color,text="Next",fg="white")
         self.turn_indicator.update()
     

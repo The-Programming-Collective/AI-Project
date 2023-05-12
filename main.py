@@ -1,6 +1,5 @@
-from tkinter import messagebox
+from time import sleep
 import tkinter as tk
-from board import board
 from game import game
 from MiniMaxAlgo import minimax
 
@@ -41,9 +40,9 @@ class window():
         dropdown = tk.OptionMenu(self.Frame1, difficulty, *options, command=on_select)
         dropdown.grid(row=1 , column= 1 , padx= 10 )
         #######################################
-        buttonUninformed = tk.Button(self.Frame1,text="Reset",border=0,bg="#7B6585",foreground="white",width=15,command=lambda :self.board.reset_obj())
+        buttonUninformed = tk.Button(self.Frame1,text="Reset",border=0,bg="#7B6585",foreground="white",width=15,command=lambda :self.game.reset_obj())
         buttonUninformed.grid(row = 0, column=3,padx=10)
-        turn_indicator = tk.Label(self.Frame1,border=0,bg="#7B6585",width=16,height=2)
+        turn_indicator = tk.Button(self.Frame1,text="Next Move",border=0,bg="#7B6585",foreground="white",width=15,command=lambda :self.game.play())
         turn_indicator.grid(row = 1, column=3,padx=10)
 
         self.Frame1.pack(fill="both",side="top")
@@ -51,16 +50,10 @@ class window():
         self.Frame2 = tk.Frame(self.window,bg="#D9D9D9")
         self.Frame2.pack(expand=True)
       
-        self.board = game(self.Frame2,turn_indicator,algorithm,difficulty)
+        self.game = game(self.Frame2,turn_indicator,algorithm,difficulty)
 
         self.window.mainloop()    
 
 
 if __name__=="__main__":
     obj = window()
-    # b = board(3,"lol")
-    # # print(b.get_valid_moves(b.get_board()[5][0]))
-    # b.selected=b.get_board()[2][1]
-    # b.move(b.get_board()[2][1],3,2)
-    # print(minimax(b,3,True))
-    

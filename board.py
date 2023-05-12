@@ -8,7 +8,6 @@ class board():
         self.player_count = 12
         self.AI_king_count=0
         self.player_king_count=0
-        self.valid_moves={}
         self.reset_board()
         
         
@@ -45,17 +44,15 @@ class board():
                     
         return all_pieces
    
-                          
+    
     def evaluate_score(self):
         temp = self.AI_count-self.player_count + (self.player_king_count * 0.5 - self.AI_king_count*0.5)
-        if temp < 0 :
-            print("whaaaaaaaat")
+        # if temp < 0 :
+        #     print("whaaaaaaaat")
         return temp
     
+    
     def get_valid_moves(self, piece):
-        self.remove_valid_moves()
-        
-        self.selected = piece
         moves = {}
         left = piece.column - 1
         right = piece.column + 1
@@ -67,24 +64,8 @@ class board():
         if piece.get_color() == AI_COLOR or piece.is_king():
             moves.update(self._traverse_left(row +1, min(row+3, 8), 1, piece.color, left))
             moves.update(self._traverse_right(row +1, min(row+3, 8), 1, piece.color, right))
-        
-        self.valid_moves = moves
-        
-        if piece.get_color()!= AI_COLOR:
-            self.apply_valid_moves()
             
         return moves
-        
-    
-    def remove_valid_moves(self):
-        for move in self.valid_moves:
-            self.board[move[0]][move[1]]=0
-        self.valid_moves={}
-        
-        
-    def apply_valid_moves(self):
-        for move in self.valid_moves:
-            self.board[move[0]][move[1]]=piece(move[0],move[1],VALID_COLOR)
         
         
     def _traverse_left(self, start, stop, step, color, left, skipped=[]):
@@ -155,9 +136,8 @@ class board():
         return moves
     
     
-    def remove_skipped(self,row,column):
-        try:
-            skipped = self.valid_moves[(row, column)]  
+    def remove_skipped(self,skipped):
+        try: 
             for piece in skipped:
                 piece_row,piece_column=piece.get_position()
                 if piece.get_color()==PLAYER_COLOR:
@@ -177,33 +157,31 @@ class board():
             print("Error")
 
 
-    def move(self,piece,row,column):
+    def move(self,piece,new_position,skipped):
         original_row,original_col=piece.get_position()
-        
+        row = new_position[0]
+        column = new_position[1]
         self.board[original_row][original_col]=0
         
-        self.remove_skipped(row,column)
-        self.remove_valid_moves()
-        
+        self.remove_skipped(skipped)
         
         if piece.get_color() == AI_COLOR:
-            if row == ROWS-1 and not self.selected.is_king():
-                self.selected.make_king()
+            if row == ROWS-1 and not piece.is_king():
+                piece.make_king()
                 self.AI_king_count+=1
             piece.set_position(row,column)
             self.board[row][column]=piece
             
         else:
-            if row == 0 and not self.selected.is_king():
-                self.selected.make_king()
+            if row == 0 and not piece.is_king():
+                piece.make_king()
                 self.player_king_count+=1
             piece.set_position(row,column)
             self.board[row][column]=piece
 
     
-    def ai_move(self,difficulty,algorithm):
-        temp = minimax(self, difficulty, True)
-        temp[1].remove_valid_moves()
+    def ai_move(self,difficulty,algorithm,player):
+        temp = minimax(self, difficulty, player)
         return temp[1]
         
     
