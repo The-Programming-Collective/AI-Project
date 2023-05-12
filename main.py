@@ -34,7 +34,7 @@ class window():
         dropdown = tk.OptionMenu(self.Frame1, algorithm, *options, command=on_select)
         dropdown.grid(row=0 , column= 1 , padx= 10)
         
-        options = [3,5,10]
+        options = [2,3,4]
         difficulty = tk.StringVar(self.Frame1)
         difficulty.set(options[0])
         #print(selected.get())

@@ -3,14 +3,12 @@ from piece import piece
 from MiniMaxAlgo import minimax
 
 class board():
-    def __init__(self,difficulty,algorithm):
+    def __init__(self):
         self.AI_count = 12
         self.player_count = 12
         self.AI_king_count=0
         self.player_king_count=0
         self.valid_moves={}
-        self.difficulty=difficulty
-        self.algorithm=algorithm
         self.reset_board()
         
         
@@ -49,8 +47,10 @@ class board():
    
                           
     def evaluate_score(self):
-        return self.player_count - self.AI_count + (self.player_king_count * 0.5 - self.AI_king_count*0.5)
-    
+        temp = self.AI_count-self.player_count + (self.player_king_count * 0.5 - self.AI_king_count*0.5)
+        if temp < 0 :
+            print("whaaaaaaaat")
+        return temp
     
     def get_valid_moves(self, piece):
         self.remove_valid_moves()
@@ -199,12 +199,12 @@ class board():
                 self.player_king_count+=1
             piece.set_position(row,column)
             self.board[row][column]=piece
-        
-        self.selected=None
 
     
-    def ai_move(self):
-        return minimax(self, self.difficulty, AI_COLOR)[1]
+    def ai_move(self,difficulty,algorithm):
+        temp = minimax(self, difficulty, True)
+        temp[1].remove_valid_moves()
+        return temp[1]
         
     
     def winner(self):

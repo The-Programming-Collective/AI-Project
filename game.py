@@ -11,17 +11,16 @@ class game():
         self.difficulty = difficulty
         self.algorithm = algorithm
 
-        self.board = board(int(self.difficulty.get()),self.algorithm.get()).reset_board()
+        self.board = board().reset_board()
         self.selected = None
         
         self.play=True
-        self.turn = PLAYER_COLOR
         
         # print(self.difficulty.get())
         # print(self.algorithm.get())
         
         self.turn_indicator = turn_indicator
-        self.change_turn_indicator()
+        self.change_turn_indicator(PLAYER_COLOR)
         self.draw_board()
 
         
@@ -89,20 +88,22 @@ class game():
         self.board.move(self.selected,row,column)
         self.draw_board()
         
+        
+        self.change_turn_indicator(AI_COLOR)
+        if self.play : 
+            self.board = self.board.ai_move(int(self.difficulty.get()),self.algorithm.get())
+        self.change_turn_indicator(PLAYER_COLOR)
+        self.draw_board()
+                      
+        
+    def change_turn_indicator(self,color):
         winner = self.board.winner()
-        if winner==None:
-            self.change_turn_indicator()
-        else:
+        if winner!=None:
             self.play=False
             f = font.Font(family='Helvetica', size=8, weight='bold')
             self.turn_indicator.config(text=winner+" wins",font=f,fg="gold",)
             self.turn_indicator.update()
-        
-        self.board = self.board.ai_move()
-        self.draw_board()
-                      
-        
-    def change_turn_indicator(self):
-        self.turn_indicator.config(bg=self.turn,text="")
+            
+        self.turn_indicator.config(bg=color,text="")
         self.turn_indicator.update()
     
