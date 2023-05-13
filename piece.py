@@ -5,9 +5,11 @@ class piece():
         self.column = column
         self.color = color
         self.king = False
+        self.previous_position = [0,0]
        
     
     def move(self,row,column):
+        self.previous_position[self.row,self.column]
         self.row=row
         self.column=column
     

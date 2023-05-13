@@ -8,6 +8,7 @@ import tkinter as tk
 class game():
     def __init__(self,Frame,turn_indicator,algorithm,difficulty):
         self.turn = False
+        self.run = True
         self.Frame2 = Frame 
         self.algorithm = algorithm
         self.difficulty = difficulty
@@ -22,32 +23,30 @@ class game():
 
         
     def play(self):
-        if not self.play:
+        if not self.run:
             return
         
         new_board=self.board.ai_move(int(self.difficulty.get()),self.algorithm.get(),self.turn)
-        
-        if(not new_board):
+        if(not new_board or new_board==self.board):
             self.draw_winner(self.board.evaluate_winner())
             return
         
+        self.previous_ai_pieces_counter = new_board.AI_count
+        self.previous_player_pieces_counter = new_board.player_count
         self.board = new_board
         self.draw_board()
-        self.turn = not self.turn
-        if self.turn:
-            self.change_turn_indicator(AI_COLOR)
-        else:
-            self.change_turn_indicator(PLAYER_COLOR)
+        
+        self.change_turn()
             
         self.moves_counter += 1
-        if self.moves_counter >= 30:
+        if self.moves_counter >= 50:
             if (self.previous_ai_pieces_counter==self.board.AI_count and
             self.previous_player_pieces_counter==self.board.player_count):
                 self.death_counter += 1
             else:
                 self.death_counter = 0
         
-        if self.death_counter >= 5:
+        if self.death_counter >= 10:
             self.draw_winner(self.board.evaluate_winner())
         
 
@@ -92,13 +91,21 @@ class game():
 
 
     def piece(self,parent,p):   
-        self.button = tk.Button(parent,background=p.get_color(),border=0)
+        self.button = tk.Label(parent,background=p.get_color(),border=0)
         
         if p.is_king():
             f = font.Font(family='Helvetica', size=14, weight='bold')
             self.button.config(text="K",font=f ,fg="gold")
         self.button.grid(sticky="NWSE",padx=10,pady=10)
-                      
+       
+                  
+    def change_turn(self):
+        self.turn = not self.turn
+        if self.turn:
+            self.change_turn_indicator(AI_COLOR)
+        else:
+            self.change_turn_indicator(PLAYER_COLOR)    
+        
         
     def change_turn_indicator(self,color):
         winner_color = self.board.winner()
@@ -112,7 +119,7 @@ class game():
     
     
     def draw_winner(self,winner_color):
-        self.play=False
+        self.run=False
         f = font.Font(family='Helvetica', size=8, weight='bold')
-        self.turn_indicator.config(text= winner_color +" wins",font=f,fg="gold",)
+        self.turn_indicator.config(text= winner_color +" wins",font=f,fg="gold",bg=winner_color)
         self.turn_indicator.update()

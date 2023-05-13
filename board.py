@@ -1,3 +1,4 @@
+from copy import deepcopy
 from Globals import *
 from piece import piece
 from MiniMaxAlgo import minimax
@@ -47,15 +48,14 @@ class board():
         return all_pieces
    
     
-    def evaluate_score(self,old_board,turn):
-    
+    def evaluate_score(self):
         score=0
-        if not turn and self.winner() == PLAYER_COLOR :
+        if self.winner() == PLAYER_COLOR :
             score+=1000
-        elif turn and self.winner() == AI_COLOR :
+        elif self.winner() == AI_COLOR :
             score-=1000        
         score+=self.AI_count - self.player_count 
-        score+=self.player_king_count * 5 - self.AI_king_count * 5
+        score+=self.AI_king_count * 0.5 - self.player_king_count * 0.5
         return score
 
 
@@ -71,6 +71,11 @@ class board():
         if piece.get_color() == AI_COLOR or piece.is_king():
             moves.update(self._traverse_left(row +1, min(row+3, 8), 1, piece.color, left))
             moves.update(self._traverse_right(row +1, min(row+3, 8), 1, piece.color, right))
+            
+        try:
+            del moves[(piece.previous_position[0],piece.previous_position[1])]
+        except:
+            print("piece first move")
             
         return moves
         
@@ -166,6 +171,7 @@ class board():
 
     def move(self,piece,new_position,skipped):
         original_row,original_col=piece.get_position()
+        piece.previous_position=[original_row,original_col]
         row = new_position[0]
         column = new_position[1]
         self.board[original_row][original_col]=0
@@ -189,7 +195,7 @@ class board():
     
     def ai_move(self,difficulty,algorithm,player):
         if algorithm == "MiniMax":
-            temp = minimax(self,self,difficulty, player)
+            temp = minimax(self,difficulty, player)
             return temp[1]
         else:
             temp = alphabeta(self, difficulty, player, float('-inf'),float('inf'))

@@ -2,9 +2,9 @@ from Globals import *
 from copy import deepcopy
 
 
-def minimax(old_position, position, depth, max_player):    
+def minimax( position, depth, max_player):    
     if depth == 0 or position.winner() != None:
-        return position.evaluate_score(old_position,max_player), position
+        return position.evaluate_score(), position
     
     if max_player:
         maxEval = float('-inf')
@@ -13,12 +13,12 @@ def minimax(old_position, position, depth, max_player):
         all_boards = get_all_boards(position, AI_COLOR)
         
         #TODO this case 
-        # if not all_boards:
-        #     return  ,position
+        if not all_boards:
+            return  float('inf'),position
         
         for board in all_boards:
-            evaluation = minimax(position, board, depth-1, False)[0]
-            print("Evaluation: ", evaluation)
+            evaluation = minimax(board, depth-1, False)[0]
+            # print("Evaluation: ", evaluation)
             maxEval = max(maxEval, evaluation)
             if maxEval == evaluation:
                 best_board = board
@@ -31,12 +31,12 @@ def minimax(old_position, position, depth, max_player):
         all_boards = get_all_boards(position, PLAYER_COLOR)
         
         #TODO this case 
-        # if not all_boards:
-        #     return  ,position
+        if not all_boards:
+            return  float('-inf'),position
         
         for board in all_boards:
-            evaluation = minimax(position, board, depth-1, True)[0]
-            print("Evaluation: ", evaluation)
+            evaluation = minimax(board, depth-1, True)[0]
+            # print("Evaluation: ", evaluation)
             minEval = min(minEval, evaluation)
             if minEval == evaluation:
                 best_board = board

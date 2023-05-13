@@ -2,22 +2,17 @@ from Globals import *
 from copy import deepcopy
 
 
-
 # TODO fix alphabeta not moving pieces
 # Check if returns board
 def alphabeta(position, depth, max_player, alpha, beta):
     if depth == 0 or position.winner() != None:
         return position.evaluate_score(), position
-    val_counter = 0
     if max_player:
         maxVal = float('-inf')
         best_move = None
         for move in get_all_moves(position, PLAYER_COLOR):
             value = alphabeta(position, depth-1, False, alpha, beta)[0]
             maxVal = max(value, maxVal)
-            # print("value: ", value)
-            # print("maxVal: ", maxVal)
-            # print("alpha: ", alpha)
             alpha = max(alpha, maxVal)
             if maxVal == value:
                 best_move = move
@@ -31,9 +26,6 @@ def alphabeta(position, depth, max_player, alpha, beta):
         for move in get_all_moves(position, AI_COLOR):
             value = alphabeta(position, depth-1, True, alpha, beta)[0]
             minVal = min(value, minVal)
-            # print("value: ", value)
-            # print("minVal: ", minVal)
-            # print("beta: ", beta)
             beta = min(beta, minVal)
             if minVal == value:
                 best_move = move
