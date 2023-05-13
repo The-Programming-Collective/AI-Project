@@ -32,7 +32,7 @@ class window():
         dropdown = tk.OptionMenu(self.Frame1, algorithm, *options, command=on_select)
         dropdown.grid(row=0 , column= 1 , padx= 10)
         
-        options = [2,3,4]
+        options = [3,4,5,15]
         difficulty = tk.StringVar(self.Frame1)
         difficulty.set(options[0])
         #print(selected.get())
@@ -42,7 +42,9 @@ class window():
         buttonUninformed = tk.Button(self.Frame1,text="Reset",border=0,bg="#7B6585",foreground="white",width=15,command=lambda :self.game.reset_obj())
         buttonUninformed.grid(row = 0, column=3,padx=10)
         turn_indicator = tk.Button(self.Frame1,text="Next Move",border=0,bg="#7B6585",foreground="white",width=15,command=lambda :self.game.play())
-        turn_indicator.grid(row = 1, column=3,padx=10)
+        turn_indicator.grid(row = 1, column=4,padx=10)
+        back = tk.Button(self.Frame1,text="<- Back",border=0,bg="#7B6585",foreground="white",width=15,command=lambda :self.game.get_previous_board())
+        back.grid(row = 1, column=3,padx=10)
 
         self.Frame1.pack(fill="both",side="top")
 

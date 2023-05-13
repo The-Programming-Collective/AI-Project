@@ -1,8 +1,9 @@
 from Globals import *
 from copy import deepcopy
+import random
 
 
-def minimax( position, depth, max_player):    
+def minimax(position, depth, max_player):
     if depth == 0 or position.winner() != None:
         return position.evaluate_score(), position
     
@@ -14,11 +15,10 @@ def minimax( position, depth, max_player):
         
         #TODO this case 
         if not all_boards:
-            return  float('inf'),position
+            return  float('-inf'),position
         
         for board in all_boards:
             evaluation = minimax(board, depth-1, False)[0]
-            # print("Evaluation: ", evaluation)
             maxEval = max(maxEval, evaluation)
             if maxEval == evaluation:
                 best_board = board
@@ -32,17 +32,57 @@ def minimax( position, depth, max_player):
         
         #TODO this case 
         if not all_boards:
-            return  float('-inf'),position
+            return  float('inf'),position
         
         for board in all_boards:
             evaluation = minimax(board, depth-1, True)[0]
-            # print("Evaluation: ", evaluation)
             minEval = min(minEval, evaluation)
             if minEval == evaluation:
                 best_board = board
         
         return minEval, best_board
-
+    
+def alphabeta(position, depth, max_player):
+    if depth == 0 or position.winner() != None:
+        return position.evaluate_score(), position
+    if max_player:
+        maxVal = float('-inf')
+        all_boards = get_all_boards(position, PLAYER_COLOR)
+        
+        if not all_boards:
+            return  float('-inf'),position
+        
+        index = random.randint(0,len(all_boards)-1)
+        best_move = all_boards[index]
+        
+        for move in all_boards[1:]:
+            value = alphabeta(position, depth-1, False)[0]
+            maxVal = max(value, maxVal)
+            position.alpha = max(position.alpha, maxVal)
+            if position.beta < position.alpha:
+                #print("Prune")
+                best_move = move
+                break
+        return maxVal, best_move
+    else:
+        minVal = float('inf')
+        all_boards = get_all_boards(position, AI_COLOR)
+        
+        if not all_boards:
+            return  float('inf'),position
+        
+        index = random.randint(0,len(all_boards)-1)
+        best_move = all_boards[index]
+        
+        for move in all_boards[1:]:
+            value = alphabeta(position, depth-1, True)[0]
+            minVal = min(value, minVal)
+            position.beta = min( position.beta, minVal)
+            if position.beta <  position.alpha:
+                # print("Prune")
+                best_move = move
+                break
+        return minVal, best_move
 
 def simulate_move(piece, move, board,skipped):
     board.move(piece, move,skipped)

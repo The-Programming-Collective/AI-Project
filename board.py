@@ -1,8 +1,7 @@
 from copy import deepcopy
 from Globals import *
 from piece import piece
-from MiniMaxAlgo import minimax
-from AlphaBeta import alphabeta
+from algorithms import *
 
 
 class board():
@@ -12,6 +11,8 @@ class board():
         self.AI_king_count=0
         self.player_king_count=0
         self.reset_board()
+        self.alpha = float('-inf')
+        self.beta = float('inf')
         
         
     def reset_board(self):
@@ -72,10 +73,10 @@ class board():
             moves.update(self._traverse_left(row +1, min(row+3, 8), 1, piece.color, left))
             moves.update(self._traverse_right(row +1, min(row+3, 8), 1, piece.color, right))
             
-        try:
-            del moves[(piece.previous_position[0],piece.previous_position[1])]
-        except:
-            print("piece first move")
+        # try:
+        #     del moves[(piece.previous_position[0],piece.previous_position[1])]
+        # except:
+        #     pass
             
         return moves
         
@@ -198,7 +199,7 @@ class board():
             temp = minimax(self,difficulty, player)
             return temp[1]
         else:
-            temp = alphabeta(self, difficulty, player, float('-inf'),float('inf'))
+            temp = alphabeta(self, difficulty, not player)
             return temp[1]
     
     def winner(self):

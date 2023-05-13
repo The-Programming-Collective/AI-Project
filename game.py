@@ -2,7 +2,6 @@ from tkinter.font import BOLD
 from Globals import *
 from tkinter import font
 from board import board
-from MiniMaxAlgo import minimax
 import tkinter as tk
 
 class game():
@@ -13,6 +12,7 @@ class game():
         self.algorithm = algorithm
         self.difficulty = difficulty
         self.board = board()
+        self.previous_board = None
         self.turn_indicator = turn_indicator
         self.change_turn_indicator(PLAYER_COLOR)
         self.draw_board()
@@ -21,6 +21,15 @@ class game():
         self.previous_ai_pieces_counter = 12
         self.previous_player_pieces_counter = 12
 
+
+    def get_previous_board(self):
+        if self.previous_board and self.moves_counter > 0:
+            self.moves_counter -= 1
+            self.board = self.previous_board
+            self.previous_board = None
+            self.change_turn()
+            self.draw_board()
+        
         
     def play(self):
         if not self.run:
@@ -31,22 +40,30 @@ class game():
             self.draw_winner(self.board.evaluate_winner())
             return
         
-        self.previous_ai_pieces_counter = new_board.AI_count
-        self.previous_player_pieces_counter = new_board.player_count
+        self.previous_ai_pieces_counter = self.board.AI_count
+        self.previous_player_pieces_counter = self.board.player_count
+        self.previous_ai_kings_counter = self.board.AI_king_count
+        self.previous_player_kings_counter = self.board.player_king_count
+        
+        self.previous_board = self.board
         self.board = new_board
         self.draw_board()
         
         self.change_turn()
             
         self.moves_counter += 1
-        if self.moves_counter >= 50:
+        if self.moves_counter >= 70:
             if (self.previous_ai_pieces_counter==self.board.AI_count and
-            self.previous_player_pieces_counter==self.board.player_count):
+            self.previous_player_pieces_counter==self.board.player_count and 
+            self.previous_ai_kings_counter==self.board.AI_king_count and
+            self.previous_player_kings_counter==self.board.player_king_count):
                 self.death_counter += 1
             else:
                 self.death_counter = 0
+        else:
+            self.death_counter = 0
         
-        if self.death_counter >= 10:
+        if self.death_counter >= 20:
             self.draw_winner(self.board.evaluate_winner())
         
 
@@ -114,7 +131,7 @@ class game():
             self.draw_winner(winner_color)
             return 
             
-        self.turn_indicator.config(bg=color,text="Next",fg="white")
+        self.turn_indicator.config(bg=color,text="Next ->",fg="white")
         self.turn_indicator.update()
     
     
