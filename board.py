@@ -1,6 +1,8 @@
+from copy import deepcopy
 from Globals import *
 from piece import piece
-from MiniMaxAlgo import minimax
+from algorithms import *
+
 
 class board():
     def __init__(self):
@@ -8,14 +10,13 @@ class board():
         self.player_count = 12
         self.AI_king_count=0
         self.player_king_count=0
-        self.valid_moves={}
-        self.turn=None
         self.reset_board()
+        self.alpha = float('-inf')
+        self.beta = float('inf')
         
         
     def reset_board(self):
         self.board=[]
-        self.change_turn(PLAYER_COLOR)
         counter = 0
         for row in range(ROWS):
             self.board.append([])
@@ -33,8 +34,10 @@ class board():
             counter += 1
         return self
     
+    
     def get_board(self):
         return self.board
+        
         
     def get_all_pieces(self, color):
         all_pieces = []
@@ -42,20 +45,22 @@ class board():
             for piece in row:
                 if piece != 0 and piece.get_color() == color:
                     all_pieces.append(piece)
+                    
         return all_pieces
-        
-        
+   
+    
     def evaluate_score(self):
-        return self.player_count - self.AI_count + (self.player_king_count * 0.5 - self.AI_king_count*0.5)
-    
-    
+        score=0
+        if self.winner() == PLAYER_COLOR :
+            score+=1000
+        elif self.winner() == AI_COLOR :
+            score-=1000        
+        score+=self.AI_count - self.player_count 
+        score+=self.AI_king_count * 0.5 - self.player_king_count * 0.5
+        return score
+
+
     def get_valid_moves(self, piece):
-        self.remove_valid_moves()
-        
-        if self.turn!=piece.get_color():
-            return
-        
-        self.selected = piece
         moves = {}
         left = piece.column - 1
         right = piece.column + 1
@@ -67,19 +72,13 @@ class board():
         if piece.get_color() == AI_COLOR or piece.is_king():
             moves.update(self._traverse_left(row +1, min(row+3, 8), 1, piece.color, left))
             moves.update(self._traverse_right(row +1, min(row+3, 8), 1, piece.color, right))
-        
-        self.valid_moves = moves
-        self.apply_valid_moves()
-        
-    
-    def remove_valid_moves(self):
-        for move in self.valid_moves:
-            self.board[move[0]][move[1]]=0
-        self.valid_moves={}
-        
-    def apply_valid_moves(self):
-        for move in self.valid_moves:
-            self.board[move[0]][move[1]]=piece(move[0],move[1],VALID_COLOR)
+            
+        # try:
+        #     del moves[(piece.previous_position[0],piece.previous_position[1])]
+        # except:
+        #     pass
+            
+        return moves
         
         
     def _traverse_left(self, start, stop, step, color, left, skipped=[]):
@@ -150,12 +149,11 @@ class board():
         return moves
     
     
-    def remove_skipped(self,row,column):
-        try:
-            skipped = self.valid_moves[(row, column)]  
+    def remove_skipped(self,skipped):
+        try: 
             for piece in skipped:
                 piece_row,piece_column=piece.get_position()
-                if self.turn==AI_COLOR:
+                if piece.get_color()==PLAYER_COLOR:
                     self.player_count-=1
                     
                     if self.board[piece_row][piece_column].is_king():
@@ -170,80 +168,49 @@ class board():
                 self.board[piece_row][piece_column]=0
         except:
             print("Error")
-        
-        
-    # def move(self,P):
-    #     row = P.row
-    #     column = P.column
-    #     original_row,original_col=self.selected.get_position()
-        
-    #     self.board[original_row][original_col]=0
-    #     self.selected.set_position(row,column)
-        
-    #     self.remove_skipped(row,column)
-        
-    #     self.remove_valid_moves()
-            
-    #     if self.turn == AI_COLOR:
-    #         print("lmao")
-    #         new_board = minimax(self, self.difficulty, AI_COLOR)[1]
-    #         self.AI_move_board(new_board)
-    #         if row == 8-1:
-    #             self.selected.make_king()
-    #             self.player_king_count+=1
-    #         self.change_turn(PLAYER_COLOR)
-            
-    #     else:
-    #         if row == 0:
-    #             self.selected.make_king()
-    #             self.AI_king_count+=1
-    #         self.board[row][column]=self.selected
-    #         self.change_turn(AI_COLOR)
 
-        
-    #     self.winner = self.winner()
-    
-    def move(self,P):
-        row = P.row
-        column = P.column
-        original_row,original_col=self.selected.get_position()
-        
+
+    def move(self,piece,new_position,skipped):
+        original_row,original_col=piece.get_position()
+        piece.previous_position=[original_row,original_col]
+        row = new_position[0]
+        column = new_position[1]
         self.board[original_row][original_col]=0
-        self.selected.row=row
-        self.selected.column=column
         
-        self.remove_skipped(row,column)
+        self.remove_skipped(skipped)
         
-        self.remove_valid_moves()
-            
-        if self.turn == AI_COLOR:
-            if row == ROWS-1:
-                self.selected.make_king()
+        if piece.get_color() == AI_COLOR:
+            if row == ROWS-1 and not piece.is_king():
+                piece.make_king()
                 self.AI_king_count+=1
-            self.change_turn(PLAYER_COLOR)
+            piece.set_position(row,column)
+            self.board[row][column]=piece
             
         else:
-            if row == 0:
-                self.selected.make_king()
+            if row == 0 and not piece.is_king():
+                piece.make_king()
                 self.player_king_count+=1
-            self.change_turn(AI_COLOR)
-        self.board[row][column]=self.selected
-        
-        winner = self.winner()
+            piece.set_position(row,column)
+            self.board[row][column]=piece
 
-        
-    def change_turn(self,color):
-        self.turn = color
-        
-        # if color == AI_COLOR:
-        #     new_board = minimax(self, self.difficulty, AI_COLOR)[1]
-        #     self.AI_move_board(new_board)
-        #     self.change_turn(PLAYER_COLOR)
-        
-        
+    
+    def ai_move(self,difficulty,algorithm,player):
+        if algorithm == "MiniMax":
+            temp = minimax(self,difficulty, player)
+            return temp[1]
+        else:
+            temp = alphabeta(self, difficulty, not player)
+            return temp[1]
+    
     def winner(self):
         if self.AI_count <= 0:
             return PLAYER_COLOR
         elif self.player_count <= 0:
             return AI_COLOR
-        return None 
+        return None
+    
+    # gets winner when there are no legal moves by counting the pieces on the board. 
+    def evaluate_winner(self):
+        if self.AI_count > self.player_count:
+            return AI_COLOR
+        return PLAYER_COLOR
