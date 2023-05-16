@@ -79,7 +79,7 @@ def alphabeta(position, depth, max_player):
             value = alphabeta(position, depth-1, False)[0]
             maxVal = max(value, maxVal)
             position.alpha = max(position.alpha, maxVal)
-            if position.beta < position.alpha:
+            if position.beta <= position.alpha:
                 # print("Prune")
                 best_move = move
                 break
@@ -98,7 +98,7 @@ def alphabeta(position, depth, max_player):
             value = alphabeta(position, depth-1, True)[0]
             minVal = min(value, minVal)
             position.beta = min( position.beta, minVal)
-            if position.beta <  position.alpha:
+            if position.beta <=  position.alpha:
                 # print("Prune")
                 best_move = move
                 break
