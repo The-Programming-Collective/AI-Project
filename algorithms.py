@@ -4,6 +4,17 @@ import random
 
 
 def minimax(position, depth, max_player):
+    """ MiniMax function that evaluates all the possible moves and choses the best possible one
+
+    Args:
+        position (board): Current board
+        depth (integer): Difficulty represented by search depth
+        max_player (boolean): Turn
+
+    Returns:
+        maxEval or minEval: Best evaluation depending on turn
+        board: Board with best move
+    """
     if depth == 0 or position.winner() != None:
         return position.evaluate_score(), position
     
@@ -13,7 +24,6 @@ def minimax(position, depth, max_player):
         
         all_boards = get_all_boards(position, AI_COLOR)
         
-        #TODO this case 
         if not all_boards:
             return  float('-inf'),position
         
@@ -30,7 +40,6 @@ def minimax(position, depth, max_player):
         
         all_boards = get_all_boards(position, PLAYER_COLOR)
         
-        #TODO this case 
         if not all_boards:
             return  float('inf'),position
         
@@ -43,6 +52,17 @@ def minimax(position, depth, max_player):
         return minEval, best_board
     
 def alphabeta(position, depth, max_player):
+    """ MiniMax function that evaluates all the possible moves with alphabeta pruning and choses the best possible one
+
+    Args:
+        position (board): Current board
+        depth (integer): Difficulty represented by search depth
+        max_player (boolean): Turn
+
+    Returns:
+        maxEval or minEval: Best evaluation depending on turn
+        board: Board with best move
+    """
     if depth == 0 or position.winner() != None:
         return position.evaluate_score(), position
     if max_player:
@@ -59,8 +79,8 @@ def alphabeta(position, depth, max_player):
             value = alphabeta(position, depth-1, False)[0]
             maxVal = max(value, maxVal)
             position.alpha = max(position.alpha, maxVal)
-            if position.beta < position.alpha:
-                #print("Prune")
+            if position.beta <= position.alpha:
+                # print("Prune")
                 best_move = move
                 break
         return maxVal, best_move
@@ -78,18 +98,38 @@ def alphabeta(position, depth, max_player):
             value = alphabeta(position, depth-1, True)[0]
             minVal = min(value, minVal)
             position.beta = min( position.beta, minVal)
-            if position.beta <  position.alpha:
+            if position.beta <= position.alpha:
                 # print("Prune")
                 best_move = move
                 break
         return minVal, best_move
 
 def simulate_move(piece, move, board,skipped):
-    board.move(piece, move,skipped)
+    """ Simulates move on board to check for evaluation without actually performing the move
+
+    Args:
+        piece (piece): Piece to simulate move with
+        move (array): Position of move to simulate
+        board (board): Current board
+        skipped (array): Array of pieces skipped over
+
+    Returns:
+        board: Board with simulated move
+    """
+    board.move(piece, move, skipped)
     return board
 
 
 def get_all_boards(board, color):
+    """ Gets all possible boards for a given piece by simulating moves
+
+    Args:
+        board (board): Current board
+        color (string): Turn
+
+    Returns:
+        array: All of the possible boards for the given piece
+    """
     boards = []
 
     for piece in board.get_all_pieces(color):

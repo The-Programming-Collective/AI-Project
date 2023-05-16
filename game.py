@@ -5,7 +5,16 @@ from board import board
 import tkinter as tk
 
 class game():
+    
     def __init__(self,Frame,turn_indicator,algorithm,difficulty):
+        """Game class constructor
+
+        Args:
+            Frame (tk frame): tkinter configured frame
+            turn_indicator (tk button): tkinter button
+            algorithm (tk StringVar): MiniMax or MiniMax with AlphaBeta
+            difficulty (tk StringVar): Agent depth
+        """
         self.turn = False
         self.run = True
         self.Frame2 = Frame 
@@ -20,16 +29,19 @@ class game():
         self.death_counter = 0
         self.previous_ai_pieces_counter = 12
         self.previous_player_pieces_counter = 12
-
+        self.winner_indicator = None
 
     def get_previous_board(self):
-        if self.previous_board and self.moves_counter > 0:
+        """ Back button functionality
+            Wont allow user to go back if the game hasn't started yet or the game has ended
+            Allows user to go back as long as there is a valid previous board
+        """
+        if self.previous_board and self.moves_counter > 0 and self.winner_indicator != 1:
             self.moves_counter -= 1
             self.board = self.previous_board
             self.previous_board = None
             self.change_turn()
             self.draw_board()
-        
         
     def play(self):
         if not self.run:
@@ -140,3 +152,4 @@ class game():
         f = font.Font(family='Helvetica', size=8, weight='bold')
         self.turn_indicator.config(text= winner_color +" wins",font=f,fg="gold",bg=winner_color)
         self.turn_indicator.update()
+        self.winner_indicator = 1

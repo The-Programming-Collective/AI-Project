@@ -25,7 +25,7 @@ class window():
         def on_select(value):
             print("Selected:", value)
             
-        options = ["MiniMax", "MiniMax with pruning"]
+        options = ["MiniMax", "MiniMax with AlphaBeta"]
         algorithm = tk.StringVar(self.Frame1)
         algorithm.set(options[0])
         #print(selected.get())

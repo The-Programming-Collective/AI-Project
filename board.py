@@ -14,8 +14,12 @@ class board():
         self.alpha = float('-inf')
         self.beta = float('inf')
         
-        
     def reset_board(self):
+        """ Function to reset board to starting state
+
+        Returns:
+            board: Reset board 
+        """
         self.board=[]
         counter = 0
         for row in range(ROWS):
@@ -34,12 +38,24 @@ class board():
             counter += 1
         return self
     
-    
     def get_board(self):
+        """ Board getter
+
+        Returns:
+            board object
+        """
         return self.board
         
-        
+
     def get_all_pieces(self, color):
+        """ Function to return all pieces
+
+        Args:
+            color (String): Either black or red
+
+        Returns:
+            Array: Array that contains all pieces
+        """
         all_pieces = []
         for row in self.board:
             for piece in row:
@@ -50,6 +66,11 @@ class board():
    
     
     def evaluate_score(self):
+        """ Evaluation function to evaluate each move
+
+        Returns:
+            double: evaluation
+        """
         score=0
         if self.winner() == PLAYER_COLOR :
             score+=1000
@@ -61,6 +82,14 @@ class board():
 
 
     def get_valid_moves(self, piece):
+        """ Gets all valid moves for a piece
+
+        Args:
+            piece (piece)
+
+        Returns:
+            dict: set of all valid moves
+        """
         moves = {}
         left = piece.column - 1
         right = piece.column + 1
@@ -82,6 +111,19 @@ class board():
         
         
     def _traverse_left(self, start, stop, step, color, left, skipped=[]):
+        """ Traverses piece left diagonally
+
+        Args:
+            start (int): description
+            stop (int): description
+            step (int): description
+            color (String): description
+            left (int): description
+            skipped (list, optional): The pieces skipped over when making this move. Defaults to [].
+
+        Returns:
+            (_dict_): Set of moves
+        """
         moves = {}
         last = []
         for r in range(start, stop, step):
@@ -116,6 +158,19 @@ class board():
 
 
     def _traverse_right(self, start, stop, step, color, right, skipped=[]):
+        """ Traverses piece right diagonally
+
+        Args:
+            start (int): description
+            stop (int): description
+            step (int): description
+            color (String): description
+            right (int): description
+            skipped (list, optional): The pieces skipped over when making this move. Defaults to [].
+
+        Returns:
+            (_dict_): Set of moves
+        """
         moves = {}
         last = []
         for r in range(start, stop, step):
@@ -150,6 +205,11 @@ class board():
     
     
     def remove_skipped(self,skipped):
+        """ Removes skipped pieces from board
+
+        Args:
+            skipped (array): Skipped pieces
+        """
         try: 
             for piece in skipped:
                 piece_row,piece_column=piece.get_position()
@@ -171,6 +231,13 @@ class board():
 
 
     def move(self,piece,new_position,skipped):
+        """ Moves piece to a position on the board
+
+        Args:
+            piece (piece)
+            new_position (array): Array that contains row and column
+            skipped (array)
+        """
         original_row,original_col=piece.get_position()
         piece.previous_position=[original_row,original_col]
         row = new_position[0]
@@ -195,6 +262,15 @@ class board():
 
     
     def ai_move(self,difficulty,algorithm,player):
+        """ Function that decides which move the agent will make based on diffuiculty and algorithm selected
+
+        Args:
+            difficulty (integer): Depth of search for moves
+            algorithm (String): MiniMax or MiniMax with AlphaBeta
+            player (boolean): Which color turn is it to move
+        Returns:
+            _type_: _description_
+        """
         if algorithm == "MiniMax":
             temp = minimax(self,difficulty, player)
             return temp[1]
@@ -203,14 +279,23 @@ class board():
             return temp[1]
     
     def winner(self):
+        """ Default function to check for winner if one side takes all the other sides' pieces.
+
+        Returns:
+            string: Winner's color
+        """
         if self.AI_count <= 0:
             return PLAYER_COLOR
         elif self.player_count <= 0:
             return AI_COLOR
         return None
     
-    # gets winner when there are no legal moves by counting the pieces on the board. 
     def evaluate_winner(self):
+        """ Gets winner when there are no legal moves by counting the pieces on the board. 
+
+        Returns:
+            string: Winner's color
+        """
         if self.AI_count > self.player_count:
             return AI_COLOR
         return PLAYER_COLOR
